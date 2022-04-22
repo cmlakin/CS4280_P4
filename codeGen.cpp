@@ -11,6 +11,8 @@
 using namespace std;
 
 extern string currentIdent;
+extern list<string> symTab;
+list<string> temps;
 string prevIdent;
 
 void codeGen(node_t* p, ofstream& out) {
@@ -27,6 +29,7 @@ void codeGen(node_t* p, ofstream& out) {
       // cout << "iter " << (*iter).token.chars << endl;
 
       entry = (*iter).token.chars;
+      cout << "entry =  " << (*iter).token.chars << endl;
 
       if (entry == "Name") {
         ++iter;
@@ -40,10 +43,10 @@ void codeGen(node_t* p, ofstream& out) {
         ++iter;
         currentIdent = (*iter).token.chars;
         // cout << "current ident = " << currentIdent << endl;
-        if ((*iter).token.ID == 1002) {
+        if ((*iter).token.ID == 1002) { // Identifer
           out << "READ " << currentIdent << endl;
         }
-        else if ((*iter).token.ID == 1004){
+        else if ((*iter).token.ID == 1004){ // Number
           out << "LOAD " << currentIdent << endl;
         }
       }
@@ -51,17 +54,27 @@ void codeGen(node_t* p, ofstream& out) {
         ++iter;
         currentIdent = (*iter).token.chars;
         // cout << "current ident = " << currentIdent << endl;
-        if ((*iter).token.ID == 1002) {
+        if ((*iter).token.ID == 1002) { // Identifier
           out << "WRITE " << currentIdent << endl;
         }
-        else if ((*iter).token.ID == 1004){
+        else if ((*iter).token.ID == 1004){ // Number
           out << "WRITE " << currentIdent << endl;
         }
       }
       else if (entry == "If") {
         ++iter;
-        currentIdent = (*iter).token.chars;
+        string ident = (*iter).token.chars;
         // cout << "current ident = " << currentIdent << endl;
+        ++iter;
+        string next = (*iter).token.chars;
+        if (next == "<-") {
+          out << "READ T1\n";
+          out << "SUB " << ident << endl;
+          out << "BRPOS OUT\n";
+          // call separate function for d
+          out << "OUT: NOOP\n";
+
+        }
       }
       else if (entry == "Assign") {
         ++iter;
@@ -80,11 +93,12 @@ void codeGen(node_t* p, ofstream& out) {
       else if (entry == "Here"){
         ++iter;
         currentIdent = (*iter).token.chars;
+        temps.push_back("T4");
         out << "READ T4\n";
-        out << "BRZNEG OUT\n";
+        out << "BRZNEG NOREPEAT\n";
         out << "REPEAT: WRITE T4\n";
         out << "SUB 1\n";
-        out << "BRPOS NOREPEAT\n";
+        out << "BRPOS REPEAT\n";
         out << "NOREPEAT: NOOP\n";
       }
       else if (entry == "Move") {
@@ -93,15 +107,17 @@ void codeGen(node_t* p, ofstream& out) {
         out << "LOAD " << currentIdent << endl;
       }
       else if (entry == "/") {
-        ++iter;
+        cout << "/ current ident = " << currentIdent << endl;
+        //++iter;
         currentIdent = (*iter).token.chars;
-        // cout << "current ident = " << currentIdent << endl;
-        if ((*iter).token.ID == 1002) {
+        cout << "current ident = " << currentIdent << endl;
+        if ((*iter).token.ID == 1002) { // Identifer
           out << "LOAD " << currentIdent << endl;
           out << "SUB 1\n";
           out << "STORE " << currentIdent << endl;
         }
-        else {
+        else if ((*iter).token.ID == 1004){ // Number
+          temps.push_back("T3");
           out << "READ T3\n";
           out << "SUB 1\n";
           out << "STORE " << currentIdent << endl;
@@ -113,5 +129,18 @@ void codeGen(node_t* p, ofstream& out) {
 
       // statSem(&(*iter));
     }
+  }
+}
+
+
+
+void printVars(ofstream& out) {
+
+  for (list<string>::iterator iter = std::begin(symTab); iter!=std::end(symTab); ++iter){
+    out << (*iter) << " 0\n";
+  }
+
+  for (list<string>::iterator iter = std::begin(temps); iter!=std::end(temps); ++iter){
+    out << (*iter) << " 0\n";
   }
 }

@@ -1,6 +1,10 @@
 LOAD 0
-STORE prog1
-READ prog2
+STORE prog2
+READ prog3
 LOAD 0
-STORE id1
-WRITE prog2
+STORE id2
+WRITE id2
+STOP
+prog2 0
+prog3 0
+id2 0

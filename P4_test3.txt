@@ -1,8 +1,10 @@
-Name prog2
-Spot prog1
+Name prog1
+Spot prog2
 Place
-Name id2
-/ prog1
-Show id1
-Home
+Name prog3
+.
+Here 2 There
+.
 Show prog2
+Home
+Show prog3

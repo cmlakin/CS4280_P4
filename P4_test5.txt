@@ -1,9 +1,9 @@
 Name prog4
-Spot prog5
+Spot prog4
 Place
 Name id2
 .
-{ If id1 <- 5 . Show id2 }
+{ Do Again Show id2 <- 5 . }
 .
 Home
 Show prog4

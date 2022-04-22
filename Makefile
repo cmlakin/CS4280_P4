@@ -27,4 +27,4 @@ codeGen.o: codeGen.cpp codeGen.h
 	$(CC) $(CFLAGS) -c codeGen.cpp
 
 clean:
-	rm *.o statSem
+	rm *.o codeGen

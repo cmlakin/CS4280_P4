@@ -18,6 +18,9 @@
 
 using namespace std;
 
+
+
+
 int main(int argc, char * argv[]) {
   //cout << "*** in main\n";
   char* filenameIn;
@@ -49,6 +52,8 @@ int main(int argc, char * argv[]) {
 
   outFile.open("P4.asm");
   codeGen(getRoot(), outFile);
+  outFile << "STOP\n";
+  printVars(outFile);
   outFile.close();
 
   // treePrint(getRoot());

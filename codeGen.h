@@ -6,6 +6,7 @@
 using std::ofstream;
 
 void codeGen(node_t*, ofstream&);
+void printVars(ofstream&);
 
 
 #endif
