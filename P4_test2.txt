@@ -5,4 +5,4 @@ Name id2
 / prog2
 Show id2
 Home
-Show prog2
+Show prog3

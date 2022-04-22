@@ -53,8 +53,10 @@ void codeGen(node_t* p, ofstream& out) {
       else if (entry == "Show") {
         ++iter;
         currentIdent = (*iter).token.chars;
-        // cout << "current ident = " << currentIdent << endl;
+        cout << "show - current ident = " << currentIdent << endl;
+        cout << "show - tk.ID = " << (*iter).token.ID << endl;
         if ((*iter).token.ID == 1002) { // Identifier
+          cout << "in show 1002 if\n";
           out << "WRITE " << currentIdent << endl;
         }
         else if ((*iter).token.ID == 1004){ // Number
@@ -64,7 +66,7 @@ void codeGen(node_t* p, ofstream& out) {
       else if (entry == "If") {
         ++iter;
         string ident = (*iter).token.chars;
-        // cout << "current ident = " << currentIdent << endl;
+        cout << "current ident = " << currentIdent << endl;
         ++iter;
         string next = (*iter).token.chars;
         if (next == "<-") {
@@ -79,13 +81,13 @@ void codeGen(node_t* p, ofstream& out) {
       else if (entry == "Assign") {
         ++iter;
         currentIdent = (*iter).token.chars;
-        // cout << "current ident = " << currentIdent << endl;
+        cout << "current ident = " << currentIdent << endl;
         prevIdent = currentIdent;
       }
       else if (entry == "Flip") {
         ++iter;
         currentIdent = (*iter).token.chars;
-        // cout << "current ident = " << currentIdent << endl;
+        cout << "current ident = " << currentIdent << endl;
         out << "LOAD " << currentIdent << endl;
         out << "MULT -1\n";
         out << "STORE " << currentIdent << endl;
@@ -107,22 +109,41 @@ void codeGen(node_t* p, ofstream& out) {
         out << "LOAD " << currentIdent << endl;
       }
       else if (entry == "/") {
-        //cout << "/ current ident = " << currentIdent << endl;
-        ++iter;
+        prevIdent = entry;
+        // ++iter;
+        // currentIdent = (*iter).token.chars;
+        // cout << "/ current ident = " << currentIdent << endl;
+        codeGen(&(*iter), out);
+
+        // if ((*iter).token.ID == 1002) { // Identifer
+        //   out << "LOAD " << currentIdent << endl;
+        //
+        //   out << "SUB 1\n";
+        //   out << "STORE " << currentIdent << endl;
+        // }
+        // else if ((*iter).token.ID == 1004){ // Number
+        //   temps.push_back("T3");
+        //   out << "READ T3\n";
+        //   out << "SUB 1\n";
+        //   out << "STORE " << currentIdent << endl;
+        // }
+      }else if (prevIdent == "/" && (*iter).token.ID == 1002) {
+        // ++iter;
         currentIdent = (*iter).token.chars;
         cout << "/ current ident = " << currentIdent << endl;
-
-        if ((*iter).token.ID == 1002) { // Identifer
-          out << "LOAD " << currentIdent << endl;
-          out << "SUB 1\n";
-          out << "STORE " << currentIdent << endl;
-        }
-        else if ((*iter).token.ID == 1004){ // Number
-          temps.push_back("T3");
-          out << "READ T3\n";
-          out << "SUB 1\n";
-          out << "STORE " << currentIdent << endl;
-        }
+        out << "LOAD " << currentIdent << endl;
+        out << "SUB 1\n";
+        out << "STORE " << currentIdent << endl;
+        prevIdent = "";
+      }
+      else if (prevIdent == "/" && (*iter).token.ID == 1004){ // Number
+        currentIdent = (*iter).token.chars;
+        cout << "/ current ident = " << currentIdent << endl;
+        temps.push_back("T3");
+        out << "READ T3\n";
+        out << "SUB 1\n";
+        out << "STORE " << currentIdent << endl;
+        prevIdent = "";
       }
       else {
         codeGen(&(*iter), out);

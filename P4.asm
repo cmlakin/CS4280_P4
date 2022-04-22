@@ -3,3 +3,11 @@ STORE prog2
 READ prog3
 LOAD 0
 STORE id2
+LOAD prog2
+SUB 1
+STORE prog2
+WRITE id2
+STOP
+prog2 0
+prog3 0
+id2 0
