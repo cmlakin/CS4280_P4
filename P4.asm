@@ -1,0 +1,6 @@
+LOAD 0
+STORE prog1
+READ prog2
+LOAD 0
+STORE id1
+WRITE prog2
