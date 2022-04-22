@@ -34,15 +34,15 @@ void codeGen(node_t* p, ofstream& out) {
       if (entry == "Name") {
         ++iter;
         currentIdent = (*iter).token.chars;
-        // cout << "current ident = " << currentIdent << endl;
+        cout << "current ident = " << currentIdent << endl;
         out << "LOAD 0\n";
         out << "STORE " << currentIdent << endl;
 
       }
       else if (entry == "Spot") {
-        ++iter;
+        iter++;
         currentIdent = (*iter).token.chars;
-        // cout << "current ident = " << currentIdent << endl;
+        cout << "current ident = " << currentIdent << endl;
         if ((*iter).token.ID == 1002) { // Identifer
           out << "READ " << currentIdent << endl;
         }
@@ -107,10 +107,11 @@ void codeGen(node_t* p, ofstream& out) {
         out << "LOAD " << currentIdent << endl;
       }
       else if (entry == "/") {
-        cout << "/ current ident = " << currentIdent << endl;
-        //++iter;
+        //cout << "/ current ident = " << currentIdent << endl;
+        ++iter;
         currentIdent = (*iter).token.chars;
-        cout << "current ident = " << currentIdent << endl;
+        cout << "/ current ident = " << currentIdent << endl;
+
         if ((*iter).token.ID == 1002) { // Identifer
           out << "LOAD " << currentIdent << endl;
           out << "SUB 1\n";
