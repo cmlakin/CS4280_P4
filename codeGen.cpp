@@ -14,6 +14,7 @@ extern string currentIdent;
 extern list<string> symTab;
 list<string> temps;
 string prevIdent;
+char printOut = 'n';
 
 void codeGen(node_t* p, ofstream& out) {
   if (p == nullptr) {
@@ -21,13 +22,14 @@ void codeGen(node_t* p, ofstream& out) {
   }
   else {
     // cout << p->label << endl;
-
+    int count = 0;
     string entry;
     //cout << "label " << p->label << endl;
     for (list<node_t>::iterator iter = std::begin(p->children); iter!=std::end(p->children); ++iter){
 
       // cout << "iter " << (*iter).token.chars << endl;
-
+      cout << "label = " << p->label << endl;
+      cout << "count =  " << ++count << endl;
       entry = (*iter).token.chars;
       cout << "entry =  " << (*iter).token.chars << endl;
 
@@ -55,28 +57,34 @@ void codeGen(node_t* p, ofstream& out) {
         currentIdent = (*iter).token.chars;
         cout << "show - current ident = " << currentIdent << endl;
         cout << "show - tk.ID = " << (*iter).token.ID << endl;
-        if ((*iter).token.ID == 1002) { // Identifier
-          cout << "in show 1002 if\n";
-          out << "WRITE " << currentIdent << endl;
-        }
-        else if ((*iter).token.ID == 1004){ // Number
-          out << "WRITE " << currentIdent << endl;
+        out << "WRITE " << currentIdent << endl;
+        if (printOut == 'y'){
+          out << "DONE: NOOP\n";
+          printOut = 'n';
         }
       }
       else if (entry == "If") {
         ++iter;
-        string ident = (*iter).token.chars;
+        prevIdent = (*iter).token.chars;
         cout << "current ident = " << currentIdent << endl;
-        ++iter;
-        string next = (*iter).token.chars;
-        if (next == "<-") {
-          out << "READ T1\n";
-          out << "SUB " << ident << endl;
-          out << "BRPOS OUT\n";
-          // call separate function for d
-          out << "OUT: NOOP\n";
-
-        }
+        // call separate function for d
+        codeGen(&(*iter), out);
+      }
+      else if (entry == "<-") {
+        temps.push_back("T1");
+        out << "READ T1\n";
+        out << "SUB " << prevIdent << endl;
+        out << "BRNEG DONE\n";
+        printOut = 'y';
+        codeGen(&(*iter), out);
+      }
+      else if (entry == "<<") {
+        temps.push_back("T2");
+        out << "READ T2\n";
+        out << "SUB " << prevIdent << endl;
+        out << "BRNEG DONE\n";
+        printOut = 'y';
+        codeGen(&(*iter), out);
       }
       else if (entry == "Assign") {
         ++iter;
@@ -110,35 +118,20 @@ void codeGen(node_t* p, ofstream& out) {
       }
       else if (entry == "/") {
         prevIdent = entry;
-        // ++iter;
-        // currentIdent = (*iter).token.chars;
-        // cout << "/ current ident = " << currentIdent << endl;
         codeGen(&(*iter), out);
-
-        // if ((*iter).token.ID == 1002) { // Identifer
-        //   out << "LOAD " << currentIdent << endl;
-        //
-        //   out << "SUB 1\n";
-        //   out << "STORE " << currentIdent << endl;
-        // }
-        // else if ((*iter).token.ID == 1004){ // Number
-        //   temps.push_back("T3");
-        //   out << "READ T3\n";
-        //   out << "SUB 1\n";
-        //   out << "STORE " << currentIdent << endl;
-        // }
-      }else if (prevIdent == "/" && (*iter).token.ID == 1002) {
-        // ++iter;
+      }
+      else if (prevIdent == "/" && (*iter).token.ID == 1002) {
         currentIdent = (*iter).token.chars;
-        cout << "/ current ident = " << currentIdent << endl;
+        cout << "1002 / current ident = " << currentIdent << endl;
         out << "LOAD " << currentIdent << endl;
         out << "SUB 1\n";
         out << "STORE " << currentIdent << endl;
         prevIdent = "";
+        codeGen(&(*iter), out);
       }
       else if (prevIdent == "/" && (*iter).token.ID == 1004){ // Number
         currentIdent = (*iter).token.chars;
-        cout << "/ current ident = " << currentIdent << endl;
+        cout << "1004 / current ident = " << currentIdent << endl;
         temps.push_back("T3");
         out << "READ T3\n";
         out << "SUB 1\n";
@@ -148,8 +141,6 @@ void codeGen(node_t* p, ofstream& out) {
       else {
         codeGen(&(*iter), out);
       }
-
-      // statSem(&(*iter));
     }
   }
 }
