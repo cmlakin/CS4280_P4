@@ -48,7 +48,7 @@ int main(int argc, char * argv[]) {
   // here is where I will call semantics file
   statSem(getRoot());
   // cout << "\nIn Main:\n";
-  printSymTab();
+  // printSymTab();
 
   outFile.open("P4.asm");
   codeGen(getRoot(), outFile);
