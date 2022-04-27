@@ -13,7 +13,11 @@ using namespace std;
 extern string currentIdent;
 extern list<string> symTab;
 list<string> temps;
-string prevIdent;
+string prevIdent = "";
+string prevLabelIdent = "";
+string prevLabel = "";
+string prevOp = "";
+string prevNumber = "";
 char printOut = 'n';
 
 void codeGen(node_t* p, ofstream& out) {
@@ -70,12 +74,24 @@ void codeGen(node_t* p, ofstream& out) {
         // call separate function for d
         codeGen(&(*iter), out);
       }
+      // else if (!prevOp.empty() && !prevNumber.empty() && !prevIdent.empty()){
+      //
+      //
+      // }
+      // else if ((*iter).token.ID == 1004){
+      //   prevNumber = (*iter).token.chars;
+      //   ++iter;
+      //   codeGen(&(*iter), out);
+      //
+      //
+      // }
       else if (entry == "<-") {
         temps.push_back("T1");
         out << "READ T1\n";
         out << "SUB " << prevIdent << endl;
         out << "BRNEG DONE\n";
         printOut = 'y';
+        prevOp = entry;
         codeGen(&(*iter), out);
       }
       else if (entry == "<<") {
@@ -84,13 +100,15 @@ void codeGen(node_t* p, ofstream& out) {
         out << "SUB " << prevIdent << endl;
         out << "BRNEG DONE\n";
         printOut = 'y';
+        prevOp = entry;
         codeGen(&(*iter), out);
       }
       else if (entry == "Assign") {
         ++iter;
+        prevLabel = "Assign";
         currentIdent = (*iter).token.chars;
         cout << "current ident = " << currentIdent << endl;
-        prevIdent = currentIdent;
+        prevLabelIdent = currentIdent;
       }
       else if (entry == "Flip") {
         ++iter;
@@ -99,14 +117,22 @@ void codeGen(node_t* p, ofstream& out) {
         out << "LOAD " << currentIdent << endl;
         out << "MULT -1\n";
         out << "STORE " << currentIdent << endl;
+        if (prevLabel == "Assign"){
+          out << "STORE " << prevLabelIdent << endl;
+          prevLabel = "";
+          prevLabelIdent = "";
+        }
       }
       else if (entry == "Here"){
         ++iter;
         currentIdent = (*iter).token.chars;
         temps.push_back("T4");
+        temps.push_back("T5");
         out << "READ T4\n";
+        out << "LOAD T4\n";
+        out << "STORE T5\n";
         out << "BRZNEG NOREPEAT\n";
-        out << "REPEAT: WRITE T4\n";
+        out << "REPEAT: WRITE T5\n";
         out << "SUB 1\n";
         out << "BRPOS REPEAT\n";
         out << "NOREPEAT: NOOP\n";
@@ -127,6 +153,11 @@ void codeGen(node_t* p, ofstream& out) {
         out << "SUB 1\n";
         out << "STORE " << currentIdent << endl;
         prevIdent = "";
+        if (prevLabel == "Assign"){
+          out << "STORE " << prevLabelIdent << endl;
+          prevLabel = "";
+          prevLabelIdent = "";
+        }
         codeGen(&(*iter), out);
       }
       else if (prevIdent == "/" && (*iter).token.ID == 1004){ // Number
@@ -135,7 +166,12 @@ void codeGen(node_t* p, ofstream& out) {
         temps.push_back("T3");
         out << "READ T3\n";
         out << "SUB 1\n";
-        out << "STORE " << currentIdent << endl;
+        out << "STORE T3\n";
+        if (prevLabel == "Assign"){
+          out << "STORE " << prevLabelIdent << endl;
+          prevLabel = "";
+          prevLabelIdent = "";
+        }
         prevIdent = "";
       }
       else {

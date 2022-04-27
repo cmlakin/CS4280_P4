@@ -1,0 +1,9 @@
+Name prog4
+Spot prog4
+Place
+Name id2
+.
+{ Do Again Show id2 <- 5 . }
+.
+Home
+Show prog4
