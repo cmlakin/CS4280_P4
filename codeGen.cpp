@@ -70,21 +70,30 @@ void codeGen(node_t* p, ofstream& out) {
       else if (entry == "If") {
         ++iter;
         prevIdent = (*iter).token.chars;
-        cout << "current ident = " << currentIdent << endl;
+        cout << "current ident = " << prevIdent << endl;
         // call separate function for d
         codeGen(&(*iter), out);
       }
-      // else if (!prevOp.empty() && !prevNumber.empty() && !prevIdent.empty()){
-      //
-      //
-      // }
-      // else if ((*iter).token.ID == 1004){
-      //   prevNumber = (*iter).token.chars;
-      //   ++iter;
-      //   codeGen(&(*iter), out);
-      //
-      //
-      // }
+      else if (!prevOp.empty() && !prevNumber.empty() && !prevIdent.empty()){
+        currentIdent = (*iter).token.chars;
+
+        if (prevOp == "+") {
+          out << "READ T1\n";
+          out << "READ T2\n";
+          out << "LOAD T1\n";
+          out << "ADD T2\n";
+          out << "STORE T1\n";
+          out << "LOAD " << prevIdent << endl;
+          out << "SUB T1\n";
+          out << "BRNEG OUT\n";
+          printOut = 'y';
+        }
+
+      }
+      else if ((*iter).token.ID == 1004){
+        prevNumber = (*iter).token.chars;
+        codeGen(&(*iter), out);
+      }
       else if (entry == "<-") {
         temps.push_back("T1");
         out << "READ T1\n";
@@ -101,6 +110,10 @@ void codeGen(node_t* p, ofstream& out) {
         out << "BRNEG DONE\n";
         printOut = 'y';
         prevOp = entry;
+        codeGen(&(*iter), out);
+      }
+      else if ((*iter).token.ID == 1005) {
+        prevOp = (*iter).token.chars;
         codeGen(&(*iter), out);
       }
       else if (entry == "Assign") {
