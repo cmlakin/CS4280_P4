@@ -1,9 +1,7 @@
-Name prog4
-Spot prog4
+Name prog5
+Spot prog6
 Place
-Name id2
-.
-{ Do Again Show id2 <- 5 . }
-.
+Name id6
+Assign prog6 Flip id6
 Home
-Show prog4
+Show prog6

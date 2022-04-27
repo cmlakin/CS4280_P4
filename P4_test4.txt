@@ -1,9 +1,7 @@
 Name prog4
 Spot prog5
 Place
-Name id2
-.
-{ If id2 <- 5 . Show id2 }
-.
+Name id5
+Assign prog5 / 5
 Home
-Show prog4
+Show prog5
