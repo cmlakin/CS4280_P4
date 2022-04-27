@@ -528,19 +528,19 @@ node_t* V(istream& in, Token& tk) {
   if (tk.chars == "+") {
     node_t t(tk);
     p->children.push_back(t);
-    tk = getNextToken(in);
+    // tk = getNextToken(in);
     // cout << "in V token.chars = " << tk.chars << endl;
   }
   else if (tk.chars == "%") {
     node_t t(tk);
     p->children.push_back(t);
-    tk = getNextToken(in);
+    // tk = getNextToken(in);
     // cout << "in V token.chars = " << tk.chars << endl;
   }
   else if (tk.chars == "&") {
     node_t t(tk);
     p->children.push_back(t);
-    tk = getNextToken(in);
+    // tk = getNextToken(in);
     // cout << "in V token.chars = " << tk.chars << endl;
   }
   else {
@@ -731,7 +731,7 @@ node_t* W(istream& in, Token& tk) {
     node_t t(tk);
     p->children.push_back(t);
     tk = getNextToken(in);
-    // cout << "in W token.chars = " << tk.chars << endl;
+    // cout << "after first number in W token.chars = " << tk.chars << endl;
 
     if (tk.chars == ".") {
       node_t t(tk);
@@ -740,10 +740,11 @@ node_t* W(istream& in, Token& tk) {
       // cout << "in W token.chars = " << tk.chars << endl;
     }
     else if (tk.chars == "+" || tk.chars == "%" || tk.chars == "&"){
+      // cout << "in else if in W token.chars = " << tk.chars << endl;
       node_t t(tk);
       p->children.push_back(t);
-      tk = getNextToken(in);
-      // cout << "in W token.chars = " << tk.chars << "\ncalling V()\n";
+      // tk = getNextToken(in);
+      // cout << "in W token.chars = " << tk.chars << " calling V()\n";
       node_t* foo = V(in, tk);
       p->children.push_back(*foo);
       // cout << "-- in w after v\n";

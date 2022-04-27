@@ -18,6 +18,7 @@ string prevLabelIdent = "";
 string prevLabel = "";
 string prevOp = "";
 string prevNumber = "";
+string tOp = "";
 char printOut = 'n';
 
 void codeGen(node_t* p, ofstream& out) {
@@ -26,21 +27,21 @@ void codeGen(node_t* p, ofstream& out) {
   }
   else {
     // cout << p->label << endl;
-    int count = 0;
+    // int count = 0;
     string entry;
     //cout << "label " << p->label << endl;
     for (list<node_t>::iterator iter = std::begin(p->children); iter!=std::end(p->children); ++iter){
 
       // cout << "iter " << (*iter).token.chars << endl;
-      cout << "label = " << p->label << endl;
-      cout << "count =  " << ++count << endl;
+      // cout << "label = " << p->label << endl;
+      // cout << "count =  " << ++count << endl;
       entry = (*iter).token.chars;
-      cout << "entry =  " << (*iter).token.chars << endl;
+      // cout << "entry =  " << (*iter).token.chars << endl;
 
       if (entry == "Name") {
         ++iter;
         currentIdent = (*iter).token.chars;
-        cout << "current ident = " << currentIdent << endl;
+        // cout << "current ident = " << currentIdent << endl;
         out << "LOAD 0\n";
         out << "STORE " << currentIdent << endl;
 
@@ -48,7 +49,7 @@ void codeGen(node_t* p, ofstream& out) {
       else if (entry == "Spot") {
         iter++;
         currentIdent = (*iter).token.chars;
-        cout << "current ident = " << currentIdent << endl;
+        // cout << "current ident = " << currentIdent << endl;
         if ((*iter).token.ID == 1002) { // Identifer
           out << "READ " << currentIdent << endl;
         }
@@ -59,8 +60,8 @@ void codeGen(node_t* p, ofstream& out) {
       else if (entry == "Show") {
         ++iter;
         currentIdent = (*iter).token.chars;
-        cout << "show - current ident = " << currentIdent << endl;
-        cout << "show - tk.ID = " << (*iter).token.ID << endl;
+        // cout << "show - current ident = " << currentIdent << endl;
+        // cout << "show - tk.ID = " << (*iter).token.ID << endl;
         out << "WRITE " << currentIdent << endl;
         if (printOut == 'y'){
           out << "DONE: NOOP\n";
@@ -70,63 +71,118 @@ void codeGen(node_t* p, ofstream& out) {
       else if (entry == "If") {
         ++iter;
         prevIdent = (*iter).token.chars;
-        cout << "current ident = " << prevIdent << endl;
+        // cout << "current ident = " << prevIdent << endl;
         // call separate function for d
         codeGen(&(*iter), out);
       }
-      else if (!prevOp.empty() && !prevNumber.empty() && !prevIdent.empty()){
-        currentIdent = (*iter).token.chars;
-
-        if (prevOp == "+") {
-          out << "READ T1\n";
-          out << "READ T2\n";
-          out << "LOAD T1\n";
-          out << "ADD T2\n";
-          out << "STORE T1\n";
-          out << "LOAD " << prevIdent << endl;
-          out << "SUB T1\n";
-          out << "BRNEG OUT\n";
-          printOut = 'y';
-        }
-
-      }
       else if ((*iter).token.ID == 1004){
-        prevNumber = (*iter).token.chars;
+        if (prevNumber.empty()) {
+          prevNumber = (*iter).token.chars;
+        }
+        else {
+          if (tOp == "<-") {
+            if (prevOp == "+") {
+              temps.push_back("T1");
+              temps.push_back("T2");
+              out << "READ T1\n";
+              out << "READ T2\n";
+              out << "LOAD T1\n";
+              out << "ADD T2\n";
+              out << "SUB " << prevIdent << endl;
+              out << "BRPOS DONE\n";
+              printOut = 'y';
+            }
+            else if (prevOp == "%") {
+              temps.push_back("T1");
+              temps.push_back("T2");
+              out << "READ T1\n";
+              out << "READ T2\n";
+              out << "LOAD T1\n";
+              out << "DIV T2\n";
+              out << "STORE T1\n";
+              out << "ABS T1\n";
+              out << "SUB " << prevIdent << endl;
+              out << "BRPOS DONE\n";
+              printOut = 'y';
+            }
+            else if (prevOp == "&") {
+              temps.push_back("T1");
+              temps.push_back("T2");
+              out << "READ T1\n";
+              out << "READ T2\n";
+              out << "LOAD T1\n";
+              out << "MULT T2\n";
+              out << "SUB " << prevIdent << endl;
+              out << "BRPOS DONE\n";
+              printOut = 'y';
+            }
+            tOp = "";
+            prevOp = "";
+          }
+          else if (tOp == "<<") {
+            if (prevOp == "+") {
+              temps.push_back("T1");
+              temps.push_back("T2");
+              out << "READ T1\n";
+              out << "READ T2\n";
+              out << "LOAD T1\n";
+              out << "ADD T2\n";
+              out << "SUB " << prevIdent << endl;
+              out << "BRZNEG DONE\n";
+              printOut = 'y';
+            }
+            else if (prevOp == "%") {
+              temps.push_back("T1");
+              temps.push_back("T2");
+              out << "READ T1\n";
+              out << "READ T2\n";
+              out << "LOAD T1\n";
+              out << "DIV T2\n";
+              out << "STORE T1\n";
+              out << "ABS T1\n";
+              out << "SUB " << prevIdent << endl;
+              out << "BRZNEG DONE\n";
+              printOut = 'y';
+            }
+            else if (prevOp == "&") {
+              temps.push_back("T1");
+              temps.push_back("T2");
+              out << "READ T1\n";
+              out << "READ T2\n";
+              out << "LOAD T1\n";
+              out << "MULT T2\n";
+              out << "SUB " << prevIdent << endl;
+              out << "BRZNEG DONE\n";
+              printOut = 'y';
+            }
+          }
+          tOp = "";
+          prevOp = "";
+        }
         codeGen(&(*iter), out);
       }
-      else if (entry == "<-") {
-        temps.push_back("T1");
-        out << "READ T1\n";
-        out << "SUB " << prevIdent << endl;
-        out << "BRNEG DONE\n";
-        printOut = 'y';
-        prevOp = entry;
-        codeGen(&(*iter), out);
-      }
-      else if (entry == "<<") {
-        temps.push_back("T2");
-        out << "READ T2\n";
-        out << "SUB " << prevIdent << endl;
-        out << "BRNEG DONE\n";
-        printOut = 'y';
-        prevOp = entry;
+      else if (entry == "<-" || entry == "<<") {
+        tOp = entry;
         codeGen(&(*iter), out);
       }
       else if ((*iter).token.ID == 1005) {
-        prevOp = (*iter).token.chars;
+        if (entry == "+" || entry == "%" || entry == "&") {
+          prevOp = (*iter).token.chars;
+          // out << "prevOp " << prevOp << endl;
+        }
         codeGen(&(*iter), out);
       }
       else if (entry == "Assign") {
         ++iter;
         prevLabel = "Assign";
         currentIdent = (*iter).token.chars;
-        cout << "current ident = " << currentIdent << endl;
+        // cout << "current ident = " << currentIdent << endl;
         prevLabelIdent = currentIdent;
       }
       else if (entry == "Flip") {
         ++iter;
         currentIdent = (*iter).token.chars;
-        cout << "current ident = " << currentIdent << endl;
+        // cout << "current ident = " << currentIdent << endl;
         out << "LOAD " << currentIdent << endl;
         out << "MULT -1\n";
         out << "STORE " << currentIdent << endl;
@@ -161,7 +217,7 @@ void codeGen(node_t* p, ofstream& out) {
       }
       else if (prevIdent == "/" && (*iter).token.ID == 1002) {
         currentIdent = (*iter).token.chars;
-        cout << "1002 / current ident = " << currentIdent << endl;
+        // cout << "1002 / current ident = " << currentIdent << endl;
         out << "LOAD " << currentIdent << endl;
         out << "SUB 1\n";
         out << "STORE " << currentIdent << endl;
@@ -175,7 +231,7 @@ void codeGen(node_t* p, ofstream& out) {
       }
       else if (prevIdent == "/" && (*iter).token.ID == 1004){ // Number
         currentIdent = (*iter).token.chars;
-        cout << "1004 / current ident = " << currentIdent << endl;
+        // cout << "1004 / current ident = " << currentIdent << endl;
         temps.push_back("T3");
         out << "READ T3\n";
         out << "SUB 1\n";
