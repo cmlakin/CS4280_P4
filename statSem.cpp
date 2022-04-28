@@ -11,6 +11,7 @@ using namespace std;
 
 list<string> symTab;  // symbol table
 string currentIdent;
+int numberCount;
 
 void statSem(node_t* p) {
   if (p == nullptr) {
@@ -24,6 +25,10 @@ void statSem(node_t* p) {
     for (list<node_t>::iterator iter = std::begin(p->children); iter!=std::end(p->children); ++iter){
 
       // cout << "iter " << (*iter).token.chars << endl;
+      if ((*iter).token.ID == 1004) {
+        numberCount++;
+        cout << "Number count = " << numberCount << endl;
+      }
 
       entry = (*iter).token.chars;
 

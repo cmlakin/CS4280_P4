@@ -12,6 +12,7 @@ using namespace std;
 
 extern string currentIdent;
 extern list<string> symTab;
+extern int numberCount;
 list<string> temps;
 string prevIdent = "";
 string prevLabelIdent = "";
@@ -75,43 +76,60 @@ void codeGen(node_t* p, ofstream& out) {
         // call separate function for d
         codeGen(&(*iter), out);
       }
-      else if ((*iter).token.ID == 1004){
+      else if ((*iter).token.ID == 1004 && numberCount == 1) {
+        if (tOp == "<-") {
+         temps.push_back("T1");
+         out << "READ T1\n";
+         out << "SUB " << prevIdent << endl;
+         out << "BRPOS DONE\n";
+         printOut = 'y';
+        }
+        else if (tOp == "<<"){
+          temps.push_back("T1");
+          out << "READ T1\n";
+          out << "SUB " << prevIdent << endl;
+          out << "BRZNEG DONE\n";
+          printOut = 'y';
+
+        }
+      }
+      else if ((*iter).token.ID == 1004 && numberCount == 2) {
         if (prevNumber.empty()) {
           prevNumber = (*iter).token.chars;
         }
         else {
           if (tOp == "<-") {
             if (prevOp == "+") {
-              temps.push_back("T1");
               temps.push_back("T2");
-              out << "READ T1\n";
+              temps.push_back("T3");
               out << "READ T2\n";
-              out << "LOAD T1\n";
-              out << "ADD T2\n";
+              out << "READ T3\n";
+              out << "LOAD T2\n";
+              out << "ADD T3\n";
               out << "SUB " << prevIdent << endl;
               out << "BRPOS DONE\n";
               printOut = 'y';
             }
             else if (prevOp == "%") {
-              temps.push_back("T1");
               temps.push_back("T2");
-              out << "READ T1\n";
+              temps.push_back("T3");
               out << "READ T2\n";
-              out << "LOAD T1\n";
-              out << "DIV T2\n";
-              out << "STORE T1\n";
-              out << "ABS T1\n";
+              out << "READ T3\n";
+              out << "LOAD T2\n";
+              out << "DIV T3\n";
+              out << "STORE T2\n";
+              out << "ABS T2\n";
               out << "SUB " << prevIdent << endl;
               out << "BRPOS DONE\n";
               printOut = 'y';
             }
             else if (prevOp == "&") {
-              temps.push_back("T1");
               temps.push_back("T2");
-              out << "READ T1\n";
+              temps.push_back("T3");
               out << "READ T2\n";
-              out << "LOAD T1\n";
-              out << "MULT T2\n";
+              out << "READ T3\n";
+              out << "LOAD T2\n";
+              out << "MULT T3\n";
               out << "SUB " << prevIdent << endl;
               out << "BRPOS DONE\n";
               printOut = 'y';
@@ -121,36 +139,36 @@ void codeGen(node_t* p, ofstream& out) {
           }
           else if (tOp == "<<") {
             if (prevOp == "+") {
-              temps.push_back("T1");
-              temps.push_back("T2");
-              out << "READ T1\n";
-              out << "READ T2\n";
-              out << "LOAD T1\n";
-              out << "ADD T2\n";
+              temps.push_back("T4");
+              temps.push_back("T5");
+              out << "READ T4\n";
+              out << "READ T5\n";
+              out << "LOAD T4\n";
+              out << "ADD T5\n";
               out << "SUB " << prevIdent << endl;
               out << "BRZNEG DONE\n";
               printOut = 'y';
             }
             else if (prevOp == "%") {
-              temps.push_back("T1");
-              temps.push_back("T2");
-              out << "READ T1\n";
-              out << "READ T2\n";
-              out << "LOAD T1\n";
-              out << "DIV T2\n";
-              out << "STORE T1\n";
+              temps.push_back("T4");
+              temps.push_back("T5");
+              out << "READ T4\n";
+              out << "READ T5\n";
+              out << "LOAD T4\n";
+              out << "DIV T5\n";
+              out << "STORE T4\n";
               out << "ABS T1\n";
               out << "SUB " << prevIdent << endl;
               out << "BRZNEG DONE\n";
               printOut = 'y';
             }
             else if (prevOp == "&") {
-              temps.push_back("T1");
-              temps.push_back("T2");
-              out << "READ T1\n";
-              out << "READ T2\n";
-              out << "LOAD T1\n";
-              out << "MULT T2\n";
+              temps.push_back("T4");
+              temps.push_back("T5");
+              out << "READ T4\n";
+              out << "READ T5\n";
+              out << "LOAD T4\n";
+              out << "MULT T5\n";
               out << "SUB " << prevIdent << endl;
               out << "BRZNEG DONE\n";
               printOut = 'y';
@@ -195,13 +213,13 @@ void codeGen(node_t* p, ofstream& out) {
       else if (entry == "Here"){
         ++iter;
         currentIdent = (*iter).token.chars;
-        temps.push_back("T4");
-        temps.push_back("T5");
-        out << "READ T4\n";
-        out << "LOAD T4\n";
-        out << "STORE T5\n";
+        temps.push_back("T6");
+        temps.push_back("T7");
+        out << "READ T6\n";
+        out << "LOAD T6\n";
+        out << "STORE T7\n";
         out << "BRZNEG NOREPEAT\n";
-        out << "REPEAT: WRITE T5\n";
+        out << "REPEAT: WRITE T7\n";
         out << "SUB 1\n";
         out << "BRPOS REPEAT\n";
         out << "NOREPEAT: NOOP\n";
@@ -232,10 +250,10 @@ void codeGen(node_t* p, ofstream& out) {
       else if (prevIdent == "/" && (*iter).token.ID == 1004){ // Number
         currentIdent = (*iter).token.chars;
         // cout << "1004 / current ident = " << currentIdent << endl;
-        temps.push_back("T3");
-        out << "READ T3\n";
+        temps.push_back("T8");
+        out << "READ T8\n";
         out << "SUB 1\n";
-        out << "STORE T3\n";
+        out << "STORE T8\n";
         if (prevLabel == "Assign"){
           out << "STORE " << prevLabelIdent << endl;
           prevLabel = "";
