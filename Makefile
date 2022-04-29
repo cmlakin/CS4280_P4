@@ -1,14 +1,14 @@
-#Corrina Lakin CS4280 P0
+#Corrina Lakin CS4280 P4
 
 CC = g++
 CFLAGS = -g -Wall -std=c++11
-OBJS = main.o parser.o scanner.o treePrint.o statSem.o codeGen.o
+OBJS = main.o parser.o scanner.o treePrint.o statSem.o genCode.o
 
 
-codeGen: $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) -o codeGen
+genCode: $(OBJS)
+	$(CC) $(CFLAGS) $(OBJS) -o genCode
 
-main.o: main.cpp parser.h scanner.h token.h treePrint.h statSem.h codeGen.h
+main.o: main.cpp parser.h scanner.h token.h treePrint.h statSem.h genCode.h
 	$(CC) $(CFLAGS) -c main.cpp
 
 scanner.o: scanner.cpp scanner.h token.h
@@ -23,8 +23,8 @@ treePrint.o: treePrint.cpp treePrint.h
 statSem.o: statSem.cpp statSem.h
 	$(CC) $(CFLAGS) -c statSem.cpp
 
-codeGen.o: codeGen.cpp codeGen.h
-	$(CC) $(CFLAGS) -c codeGen.cpp
+genCode.o: genCode.cpp genCode.h
+	$(CC) $(CFLAGS) -c genCode.cpp
 
 clean:
-	rm *.o codeGen
+	rm *.o genCode

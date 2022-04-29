@@ -14,7 +14,7 @@
 #include "parser.h"
 // #include "treePrint.h"
 #include "statSem.h"
-#include "codeGen.h"
+#include "genCode.h"
 
 using namespace std;
 
@@ -51,7 +51,7 @@ int main(int argc, char * argv[]) {
   // printSymTab();
 
   outFile.open("P4.asm");
-  codeGen(getRoot(), outFile);
+  genCode(getRoot(), outFile);
   outFile << "STOP\n";
   printVars(outFile);
   outFile.close();

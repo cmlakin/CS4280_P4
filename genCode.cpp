@@ -5,7 +5,7 @@
 #include <list>
 #include "node.h"
 #include "statSem.h"
-#include "codeGen.h"
+#include "genCode.h"
 
 
 using namespace std;
@@ -19,10 +19,10 @@ string prevLabelIdent = "";
 string prevLabel = "";
 string prevOp = "";
 string prevNumber = "";
-string tOp = "";
+string tOp = ""; // operator from <T>
 char printOut = 'n';
 
-void codeGen(node_t* p, ofstream& out) {
+void genCode(node_t* p, ofstream& out) {
   if (p == nullptr) {
     return;
   }
@@ -65,6 +65,12 @@ void codeGen(node_t* p, ofstream& out) {
         // cout << "show - tk.ID = " << (*iter).token.ID << endl;
         out << "WRITE " << currentIdent << endl;
         if (printOut == 'y'){
+          if (prevLabel == "Do" && tOp == "<-"){
+            out << "BRNEG LOOP\n";
+          }
+          else if (prevLabel == "Do" && tOp == "<<"){
+            out << "BRPOS LOOP\n";
+          }
           out << "DONE: NOOP\n";
           printOut = 'n';
         }
@@ -72,17 +78,29 @@ void codeGen(node_t* p, ofstream& out) {
       else if (entry == "If") {
         ++iter;
         prevIdent = (*iter).token.chars;
+        prevLabel = "If";
         // cout << "current ident = " << prevIdent << endl;
         // call separate function for d
-        codeGen(&(*iter), out);
+        genCode(&(*iter), out);
       }
-      else if ((*iter).token.ID == 1004 && numberCount == 1) {
+      else if (entry == "Do") {
+        // ++iter;
+        // prevIdent = (*iter).token.chars;
+        prevLabel = "Do";
+        // cout << "current ident = " << prevIdent << endl;
+        // call separate function for d
+        genCode(&(*iter), out);
+      }
+      else if ((*iter).token.ID == 1004 && numberCount == 1 && prevLabel == "If") {
         if (tOp == "<-") {
          temps.push_back("T1");
          out << "READ T1\n";
          out << "SUB " << prevIdent << endl;
          out << "BRPOS DONE\n";
          printOut = 'y';
+         tOp = "";
+         prevOp = "";
+         prevLabel = "";
         }
         else if (tOp == "<<"){
           temps.push_back("T1");
@@ -90,10 +108,12 @@ void codeGen(node_t* p, ofstream& out) {
           out << "SUB " << prevIdent << endl;
           out << "BRZNEG DONE\n";
           printOut = 'y';
-
+          tOp = "";
+          prevOp = "";
+          prevLabel = "";
         }
       }
-      else if ((*iter).token.ID == 1004 && numberCount == 2) {
+      else if ((*iter).token.ID == 1004 && numberCount == 2 && prevLabel == "If") {
         if (prevNumber.empty()) {
           prevNumber = (*iter).token.chars;
         }
@@ -136,6 +156,7 @@ void codeGen(node_t* p, ofstream& out) {
             }
             tOp = "";
             prevOp = "";
+            prevLabel = "";
           }
           else if (tOp == "<<") {
             if (prevOp == "+") {
@@ -176,19 +197,136 @@ void codeGen(node_t* p, ofstream& out) {
           }
           tOp = "";
           prevOp = "";
+          prevLabel = "";
         }
-        codeGen(&(*iter), out);
+        genCode(&(*iter), out);
+      }
+      else if ((*iter).token.ID == 1004 && numberCount == 1 && prevLabel == "Do") {
+        if (tOp == "<-") {
+         temps.push_back("T1");
+         out << "LOOP: NOOP\n";
+         out << "READ T1\n";
+         out << "LOAD T1\n";
+         out << "BRPOS DONE\n";
+         printOut = 'y';
+         // tOp = "";
+         // prevOp = "";
+         // prevLabel = "";
+
+         // genCode(&(*iter), out);
+
+         // out << "BRNEG LOOP\n";
+
+        }
+        else if (tOp == "<<"){
+          temps.push_back("T1");
+          out << "READ T1\n";
+          out << "SUB " << prevIdent << endl;
+          out << "BRZNEG DONE\n";
+          printOut = 'y';
+          tOp = "";
+          prevOp = "";
+          prevLabel = "";
+        }
+      }
+      else if ((*iter).token.ID == 1004 && numberCount == 2 && prevLabel == "Do") {
+        if (prevNumber.empty()) {
+          prevNumber = (*iter).token.chars;
+        }
+        else {
+          if (tOp == "<-") {
+            if (prevOp == "+") {
+              temps.push_back("T2");
+              temps.push_back("T3");
+              out << "READ T2\n";
+              out << "READ T3\n";
+              out << "LOAD T2\n";
+              out << "ADD T3\n";
+              out << "SUB " << prevIdent << endl;
+              out << "BRPOS DONE\n";
+              printOut = 'y';
+            }
+            else if (prevOp == "%") {
+              temps.push_back("T2");
+              temps.push_back("T3");
+              out << "READ T2\n";
+              out << "READ T3\n";
+              out << "LOAD T2\n";
+              out << "DIV T3\n";
+              out << "STORE T2\n";
+              out << "ABS T2\n";
+              out << "SUB " << prevIdent << endl;
+              out << "BRPOS DONE\n";
+              printOut = 'y';
+            }
+            else if (prevOp == "&") {
+              temps.push_back("T2");
+              temps.push_back("T3");
+              out << "READ T2\n";
+              out << "READ T3\n";
+              out << "LOAD T2\n";
+              out << "MULT T3\n";
+              out << "SUB " << prevIdent << endl;
+              out << "BRPOS DONE\n";
+              printOut = 'y';
+            }
+            tOp = "";
+            prevOp = "";
+            prevLabel = "";
+          }
+          else if (tOp == "<<") {
+            if (prevOp == "+") {
+              temps.push_back("T4");
+              temps.push_back("T5");
+              out << "READ T4\n";
+              out << "READ T5\n";
+              out << "LOAD T4\n";
+              out << "ADD T5\n";
+              out << "SUB " << prevIdent << endl;
+              out << "BRZNEG DONE\n";
+              printOut = 'y';
+            }
+            else if (prevOp == "%") {
+              temps.push_back("T4");
+              temps.push_back("T5");
+              out << "READ T4\n";
+              out << "READ T5\n";
+              out << "LOAD T4\n";
+              out << "DIV T5\n";
+              out << "STORE T4\n";
+              out << "ABS T1\n";
+              out << "SUB " << prevIdent << endl;
+              out << "BRZNEG DONE\n";
+              printOut = 'y';
+            }
+            else if (prevOp == "&") {
+              temps.push_back("T4");
+              temps.push_back("T5");
+              out << "READ T4\n";
+              out << "READ T5\n";
+              out << "LOAD T4\n";
+              out << "MULT T5\n";
+              out << "SUB " << prevIdent << endl;
+              out << "BRZNEG DONE\n";
+              printOut = 'y';
+            }
+          }
+          tOp = "";
+          prevOp = "";
+          prevLabel = "";
+        }
+        genCode(&(*iter), out);
       }
       else if (entry == "<-" || entry == "<<") {
         tOp = entry;
-        codeGen(&(*iter), out);
+        genCode(&(*iter), out);
       }
       else if ((*iter).token.ID == 1005) {
         if (entry == "+" || entry == "%" || entry == "&") {
           prevOp = (*iter).token.chars;
           // out << "prevOp " << prevOp << endl;
         }
-        codeGen(&(*iter), out);
+        genCode(&(*iter), out);
       }
       else if (entry == "Assign") {
         ++iter;
@@ -231,7 +369,7 @@ void codeGen(node_t* p, ofstream& out) {
       }
       else if (entry == "/") {
         prevIdent = entry;
-        codeGen(&(*iter), out);
+        genCode(&(*iter), out);
       }
       else if (prevIdent == "/" && (*iter).token.ID == 1002) {
         currentIdent = (*iter).token.chars;
@@ -245,7 +383,7 @@ void codeGen(node_t* p, ofstream& out) {
           prevLabel = "";
           prevLabelIdent = "";
         }
-        codeGen(&(*iter), out);
+        genCode(&(*iter), out);
       }
       else if (prevIdent == "/" && (*iter).token.ID == 1004){ // Number
         currentIdent = (*iter).token.chars;
@@ -262,7 +400,7 @@ void codeGen(node_t* p, ofstream& out) {
         prevIdent = "";
       }
       else {
-        codeGen(&(*iter), out);
+        genCode(&(*iter), out);
       }
     }
   }

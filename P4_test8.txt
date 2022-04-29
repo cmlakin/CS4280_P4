@@ -1,0 +1,9 @@
+Name prog8
+Spot prog9
+Place
+Name id8
+.
+{ Do Again Flip prog9 <- 5 . }
+.
+Home
+Show prog8
