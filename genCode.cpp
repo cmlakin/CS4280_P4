@@ -63,7 +63,7 @@ void genCode(node_t* p, ofstream& out) {
         currentIdent = (*iter).token.chars;
         // cout << "show - current ident = " << currentIdent << endl;
         // cout << "show - tk.ID = " << (*iter).token.ID << endl;
-        out << "WRITE " << currentIdent << endl;
+
         if (printOut == 'y'){
           if (prevLabel == "Do" && tOp == "<-"){
             out << "BRNEG LOOP\n";
@@ -74,6 +74,7 @@ void genCode(node_t* p, ofstream& out) {
           out << "DONE: NOOP\n";
           printOut = 'n';
         }
+        out << "WRITE " << currentIdent << endl;
       }
       else if (entry == "If") {
         ++iter;
